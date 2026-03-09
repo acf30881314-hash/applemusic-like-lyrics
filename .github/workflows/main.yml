@@ -1,10 +1,10 @@
-name: Build AMLL Player Linux ARM64
+name: Build AMLL Player Linux
 
 on:
   workflow_dispatch:
 
 jobs:
-  build-linux-arm64:
+  build-linux:
     runs-on: ubuntu-22.04
 
     steps:
@@ -19,7 +19,13 @@ jobs:
         with:
           node-version: 18
 
-      - name: 安装依赖
+      - name: 启用 Corepack
+        run: corepack enable
+
+      - name: 准备 Yarn
+        run: corepack prepare yarn@stable --activate
+
+      - name: 安装系统依赖
         run: |
           sudo apt update
           sudo apt install -y \
@@ -45,15 +51,15 @@ jobs:
           YARN_ENABLE_IMMUTABLE_INSTALLS: false
           AMLL_GITHUB_IS_ACTION: true
 
-      - name: 构建 ARM64 Tauri
+      - name: 构建 Tauri
         run: |
           cd packages/player
-          cargo tauri build --target aarch64-unknown-linux-gnu
+          cargo tauri build
 
-      - name: 上传 ARM64
+      - name: 上传构建文件
         uses: actions/upload-artifact@v4
         with:
-          name: amll-linux-arm64
+          name: amll-linux
           path: |
-            packages/player/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/**/*.AppImage
-            packages/player/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/**/*.deb
+            packages/player/src-tauri/target/release/bundle/**/*.AppImage
+            packages/player/src-tauri/target/release/bundle/**/*.deb
